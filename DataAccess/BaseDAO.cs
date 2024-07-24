@@ -23,7 +23,7 @@ namespace DataAccess
            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
            string includeProperties = "",
            int? pageIndex = null, // Optional parameter for pagination (page number)
-           int? pageSize = null)  // Optional parameter for pagination (number of records per page)
+           int? pageSize = null)
         {
             IQueryable<T> query = dbSet;
 
