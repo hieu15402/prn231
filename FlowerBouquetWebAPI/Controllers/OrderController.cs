@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using FlowerBouquetWebAPI.BusinessObjects;
 using FlowerBouquetWebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,11 +22,11 @@ namespace FlowerBouquetWebAPI.Controllers
             string? customerId = null,
             int pageIndex = 1,
             int pageSize = 5,
-            string orderBy = "OrderDate") => Ok(repository.GetOrders(
+            string orderBy = "OrderDate") => Ok(new ResponseObject<IEnumerable<Order>>("Get success", repository.GetOrders(
                 customerId: customerId,
                 pageIndex: pageIndex,
                 pageSize: pageSize,
-                orderBy: orderBy));
+                orderBy: orderBy)));
 
         [Authorize(Roles = "Admin, Customer")]
         [HttpGet("{id}")]
@@ -34,9 +35,9 @@ namespace FlowerBouquetWebAPI.Controllers
             var order = repository.GetOrderById(id);
             if (order == null)
             {
-                return NotFound();
+                return NotFound(new ResponseObject<String>("Not found", ""));
             }
-            return Ok(order);
+            return Ok(new ResponseObject<Order>("Get success", order));
         }
 
         [Authorize(Roles = "Admin, Customer")]
@@ -49,7 +50,7 @@ namespace FlowerBouquetWebAPI.Controllers
                 var fb = flowerBouquetRepository.GetFlowerBouquetById(od.FlowerBouquetID);
                 if (fb == null)
                 {
-                    return NotFound();
+                    return NotFound(new ResponseObject<String>("Not found", ""));
                 }
                 if (fb.FlowerBouquetStatus != 1)
                 {
@@ -63,7 +64,7 @@ namespace FlowerBouquetWebAPI.Controllers
             foreach (var od in postOrder.OrderDetails)
             {
                 var fb = flowerBouquetRepository.GetFlowerBouquetById(od.FlowerBouquetID);
-                total += fb.UnitPrice*od.Quantity;
+                total += fb.UnitPrice * od.Quantity;
             }
             var order = new Order
             {
@@ -90,7 +91,7 @@ namespace FlowerBouquetWebAPI.Controllers
                 flowerBouquetRepository.UpdateFlowerBouquet(fb);
                 orderDetailRepository.SaveOrderDetail(orderDetail);
             }
-            return Ok(savedOrder);
+            return Ok(new ResponseObject<Order>("Create success", order));
         }
 
         [Authorize(Roles = UserRoles.Admin)]
@@ -100,13 +101,13 @@ namespace FlowerBouquetWebAPI.Controllers
             var oTmp = repository.PutOrderShipped(id);
             if (oTmp == null)
             {
-                return NotFound();
+                return NotFound(new ResponseObject<String>("Not found", ""));
             }
             if (oTmp.OrderStatus == 0)
             {
                 return BadRequest();
             }
-            return NoContent();
+            return Ok(new ResponseObject<Order>("Update success", oTmp));
         }
 
         [Authorize(Roles = UserRoles.Admin)]
@@ -116,13 +117,29 @@ namespace FlowerBouquetWebAPI.Controllers
             var oTmp = repository.PutOrderCancel(id);
             if (oTmp == null)
             {
-                return NotFound();
+                return NotFound(new ResponseObject<String>("Not found", ""));
             }
             if (oTmp.OrderStatus == 0)
             {
                 return BadRequest();
             }
-            return NoContent();
+            return Ok(new ResponseObject<Order>("Update success", oTmp));
+        }
+        [Authorize(Roles = UserRoles.Admin)]
+        [HttpDelete("{id}")]
+        public IActionResult DeleteOrder(int id)
+        {
+            var oTmp = repository.GetOrderById(id);
+            if (oTmp == null)
+            {
+                return NotFound(new ResponseObject<String>("Not found", ""));
+            }
+            if (oTmp.OrderStatus == 0)
+            {
+                return BadRequest();
+            }
+            repository.DeleteOrder(oTmp);
+            return Ok(new ResponseObject<Order>("Delete success", oTmp));
         }
     }
 }

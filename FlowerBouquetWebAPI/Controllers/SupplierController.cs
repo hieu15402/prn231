@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using FlowerBouquetWebAPI.BusinessObjects;
 using FlowerBouquetWebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,17 +20,23 @@ namespace FlowerBouquetWebAPI.Controllers
             string? keyword = null,
             int pageIndex = 1,
             int pageSize = 5,
-            string orderBy = "SupplierName") => repository.GetSuppliers(
+            string orderBy = "SupplierName") => Ok(new ResponseObject<IEnumerable<Supplier>>("Get success", repository.GetSuppliers(
                 keyword: keyword,
                 pageIndex: pageIndex,
                 pageSize: pageSize,
-                orderBy: orderBy);
+                orderBy: orderBy)));
 
+        [HttpGet("{id}")]
+        public ActionResult<Supplier> GetById(int id)
+        {
+            var s = repository.GetSupplierById(id);
+            return s != null ? Ok(new ResponseObject<Supplier>("Get success", s)) : NotFound(new ResponseObject<String>("Not found", ""));
+        }
         [HttpPost]
         public IActionResult PostSupplier(Supplier supplier)
         {
             repository.SaveSupplier(supplier);
-            return NoContent();
+            return Ok(new ResponseObject<Supplier>("Create success", supplier));
         }
     }
 }

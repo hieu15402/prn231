@@ -1,6 +1,6 @@
 ﻿using BusinessObjects;
+using FlowerBouquetWebAPI.BusinessObjects;
 using FlowerBouquetWebAPI.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Repositories;
@@ -13,7 +13,6 @@ namespace FlowerBouquetWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = UserRoles.Admin)]
     public class AuthenticationController : ControllerBase
     {
         private readonly ICustomerRepository _repository = new CustomerRepository();
@@ -39,7 +38,7 @@ namespace FlowerBouquetWebAPI.Controllers
 
                 var token = GetToken(authClaims);
 
-                return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+                return Ok(new ResponseObject<String>("Login success", new JwtSecurityTokenHandler().WriteToken(token)));
             }
             var user = _repository.GetCustomerByEmail(model.Email);
             if (user != null)
@@ -57,7 +56,7 @@ namespace FlowerBouquetWebAPI.Controllers
 
                 return Ok(new JwtSecurityTokenHandler().WriteToken(token));
             }
-            return Unauthorized();
+            return Unauthorized(new ResponseObject<String>("Login fail", ""));
         }
 
         [HttpPost]
@@ -79,7 +78,7 @@ namespace FlowerBouquetWebAPI.Controllers
                 PasswordHash = model.Password
             };
             _repository.SaveCustomer(user);
-            return StatusCode(StatusCodes.Status201Created, new Response { Status = "Success", Message = "User created successfully!" });
+            return StatusCode(StatusCodes.Status201Created, new ResponseObject<Customer>("Create success", user));
         }
 
         private JwtSecurityToken GetToken(List<Claim> authClaims)
@@ -90,7 +89,7 @@ namespace FlowerBouquetWebAPI.Controllers
             var token = new JwtSecurityToken(
                 expires: DateTime.Now.AddHours(3),
                 claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha512Signature)
                 );
 
             return token;
