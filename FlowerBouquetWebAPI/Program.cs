@@ -1,3 +1,5 @@
+using BusinessObjects.Helper;
+using FlowerBouquetWebAPI.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -26,7 +28,10 @@ builder.Services
         };
     });
 
-
+//
+builder.Services.Configure<AppSetting>(builder.Configuration.GetSection("ConnectionStrings"));
+BusinessObjectsInitializer.SetConfiguration(configuration);
+//
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
     {

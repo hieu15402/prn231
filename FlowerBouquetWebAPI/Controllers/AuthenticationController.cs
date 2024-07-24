@@ -42,9 +42,10 @@ namespace FlowerBouquetWebAPI.Controllers
             var user = _repository.GetCustomerByEmail(model.Email);
             if (user != null)
             {
+                var email = user.Email ?? string.Empty;
                 var authClaims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Email, email),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
                     new Claim(ClaimTypes.Role, UserRoles.Customer)
