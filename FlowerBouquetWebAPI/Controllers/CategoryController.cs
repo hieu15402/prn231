@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using FlowerBouquetWebAPI.BusinessObjects;
 using FlowerBouquetWebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,7 @@ namespace FlowerBouquetWebAPI.Controllers
         public ActionResult<IEnumerable<Category>> GetCategories(string? keyword = null,
         int pageIndex = 1,
         int pageSize = 5,
-        string orderBy = "CategoryName") => repository.GetCategories(keyword, pageIndex, pageSize, orderBy);
+        string orderBy = "CategoryName") => Ok(new ResponseObject<IEnumerable<Category>>("Get success", repository.GetCategories(keyword, pageIndex, pageSize, orderBy)));
 
         [HttpGet("{id}")]
         public ActionResult<Category> GetCategory(int id)
@@ -27,17 +28,17 @@ namespace FlowerBouquetWebAPI.Controllers
 
             if (category == null)
             {
-                return NotFound();
+                return NotFound(new ResponseObject<String>("Not found", ""));
             }
 
-            return Ok(category);
+            return Ok(new ResponseObject<Category>("Get success", category));
         }
 
         [HttpPost]
         public IActionResult PostCategory(Category category)
         {
             repository.SaveCategory(category);
-            return NoContent();
+            return Ok(new ResponseObject<Category>("Create success", category));
         }
         [HttpPut("{id}")]
         public IActionResult PutCategory(int id, Category category)
@@ -50,11 +51,11 @@ namespace FlowerBouquetWebAPI.Controllers
             var existingCategory = repository.GetCategoryById(id);
             if (existingCategory == null)
             {
-                return NotFound();
+                return NotFound(new ResponseObject<String>("Not found", ""));
             }
 
             repository.UpdateCategory(category);
-            return NoContent();
+            return Ok(new ResponseObject<Category>("Update success", category));
         }
         [HttpDelete("{id}")]
         public IActionResult DeleteCategory(int id)
@@ -63,11 +64,11 @@ namespace FlowerBouquetWebAPI.Controllers
 
             if (category == null)
             {
-                return NotFound();
+                return NotFound(new ResponseObject<String>("Not found", ""));
             }
 
             repository.DeleteCategory(category);
-            return NoContent();
+            return Ok(new ResponseObject<Category>("Delete success", category));
         }
     }
 }

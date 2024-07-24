@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using FlowerBouquetWebAPI.BusinessObjects;
 using FlowerBouquetWebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,31 +10,35 @@ namespace FlowerBouquetWebAPI.Controllers
 {
     [Route("api/[controller]s")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class CustomerController : ControllerBase
     {
         private ICustomerRepository repository = new CustomerRepository();
+
         [HttpGet]
         public ActionResult<IEnumerable<Customer>> GetCustomers(
             string? keyword = null,
             int pageIndex = 1,
             int pageSize = 5,
-            string orderBy = "CustomerName") => repository.GetCustomers(keyword, pageIndex, pageSize, orderBy);
+            string orderBy = "CustomerName") => Ok(new ResponseObject<IEnumerable<Customer>>("Get success", repository.GetCustomers(keyword, pageIndex, pageSize, orderBy)));
+
 
         [HttpGet("{id}")]
-        public ActionResult<Customer> GetCustomerById(string id) => repository.GetCustomerById(id);
+        public ActionResult<Customer> GetCustomerById(string id) => Ok(new ResponseObject<Customer>("Get success", repository.GetCustomerById(id)));
+
         [HttpGet("Email/{email}")]
-        public ActionResult<Customer> GetCustomerByEmail(string email) => repository.GetCustomerByEmail(email);
+        public ActionResult<Customer> GetCustomerByEmail(string email) => Ok(new ResponseObject<Customer>("Get success", repository.GetCustomerByEmail(email)));
+
         [HttpDelete("{id}")]
         public IActionResult DeleteCustomer(string id)
         {
             var c = repository.GetCustomerById(id);
             if (c == null)
             {
-                return NotFound();
+                return NotFound(new ResponseObject<String>("Not found", ""));
             }
             repository.DeleteCustomer(c);
-            return NoContent();
+            return Ok(new ResponseObject<Customer>("Delete success", c));
         }
 
         [HttpPut("{id}")]
@@ -43,7 +48,7 @@ namespace FlowerBouquetWebAPI.Controllers
             var cTmp = repository.GetCustomerById(id);
             if (cTmp == null)
             {
-                return NotFound();
+                return NotFound(new ResponseObject<String>("Not found", ""));
             }
 
             cTmp.CustomerName = putCustomer.CustomerName;
@@ -57,7 +62,7 @@ namespace FlowerBouquetWebAPI.Controllers
             }
 
             repository.UpdateCustomer(cTmp);
-            return NoContent();
+            return Ok(new ResponseObject<Customer>("Update success", cTmp));
         }
     }
 }

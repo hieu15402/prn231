@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using FlowerBouquetWebAPI.BusinessObjects;
 using FlowerBouquetWebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,7 @@ namespace FlowerBouquetWebAPI.Controllers
 {
     [Route("api/[controller]s")]
     [ApiController]
-    
+
     public class FlowerBouquetController : ControllerBase
     {
         private IFlowerBouquetRepository repository = new FlowerBouquetRepository();
@@ -21,23 +22,24 @@ namespace FlowerBouquetWebAPI.Controllers
             int pageSize = 5,
             string orderBy = "FlowerBouquetName",
             int? categoryId = null,
-            int? supplierId = null) => repository.GetFlowerBouquets(keyword: keyword,
+            int? supplierId = null) => Ok(new ResponseObject<IEnumerable<FlowerBouquet>>("Get success", repository.GetFlowerBouquets(keyword: keyword,
                 pageIndex: pageIndex,
                 pageSize: pageSize,
                 orderBy: orderBy,
                 categoryId: categoryId,
-                supplierId: supplierId);
+                supplierId: supplierId)));
 
         [HttpGet("{id}")]
         [Authorize(Roles = UserRoles.Admin)]
-        public ActionResult<FlowerBouquet> GetFlowerBouquetById(int id) => repository.GetFlowerBouquetById(id);
+        public ActionResult<FlowerBouquet> GetFlowerBouquetById(int id) => Ok(new ResponseObject<FlowerBouquet>("Get success", repository.GetFlowerBouquetById(id)));
 
-        
+
         [HttpPost]
         [Authorize(Roles = UserRoles.Admin)]
         public IActionResult PostFlowerBouquet(PostFlowerBouquet postFlowerBouquet)
         {
-            if (repository.GetFlowerBouquets().FirstOrDefault(f => f.FlowerBouquetName.ToLower().Equals(postFlowerBouquet.FlowerBouquetName.ToLower())) != null) {
+            if (repository.GetFlowerBouquets().FirstOrDefault(f => f.FlowerBouquetName.ToLower().Equals(postFlowerBouquet.FlowerBouquetName.ToLower())) != null)
+            {
                 return BadRequest();
             }
             var f = new FlowerBouquet
@@ -51,7 +53,7 @@ namespace FlowerBouquetWebAPI.Controllers
                 SupplierID = postFlowerBouquet.SupplierID
             };
             repository.SaveFlowerBouquet(f);
-            return NoContent();
+            return Ok(new ResponseObject<FlowerBouquet>("Create success", f));
         }
         [HttpDelete("{id}")]
         [Authorize(Roles = UserRoles.Admin)]
@@ -60,7 +62,7 @@ namespace FlowerBouquetWebAPI.Controllers
             var f = repository.GetFlowerBouquetById(id);
             if (f == null)
             {
-                return NotFound();
+                return NotFound(new ResponseObject<String>("Not found", ""));
             }
             if (f.OrderDetails != null && f.OrderDetails.Count > 0)
             {
@@ -71,7 +73,7 @@ namespace FlowerBouquetWebAPI.Controllers
             {
                 repository.DeleteFlowerBouquet(f);
             }
-            return NoContent();
+            return Ok(new ResponseObject<FlowerBouquet>("Delete success", f));
         }
         [HttpPut("{id}")]
         [Authorize(Roles = UserRoles.Admin)]
@@ -80,14 +82,15 @@ namespace FlowerBouquetWebAPI.Controllers
             var fTmp = repository.GetFlowerBouquetById(id);
             if (fTmp == null)
             {
-                return NotFound();
+                return NotFound(new ResponseObject<String>("Not found", ""));
             }
 
-            if (!fTmp.FlowerBouquetName.ToLower().Equals(postFlowerBouquet.FlowerBouquetName.ToLower()) 
+            if (!fTmp.FlowerBouquetName.ToLower().Equals(postFlowerBouquet.FlowerBouquetName.ToLower())
                 && repository.GetFlowerBouquets().FirstOrDefault(f => f.FlowerBouquetName.ToLower().Equals(postFlowerBouquet.FlowerBouquetName.ToLower())) != null)
             {
                 return BadRequest();
-            } else
+            }
+            else
             {
                 fTmp.FlowerBouquetName = postFlowerBouquet.FlowerBouquetName;
             }
@@ -99,7 +102,7 @@ namespace FlowerBouquetWebAPI.Controllers
             fTmp.SupplierID = postFlowerBouquet.SupplierID;
 
             repository.UpdateFlowerBouquet(fTmp);
-            return NoContent();
+            return Ok(new ResponseObject<FlowerBouquet>("Update success", fTmp));
         }
     }
 }
