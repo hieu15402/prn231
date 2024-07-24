@@ -1,5 +1,6 @@
 ﻿using BusinessObjects;
 using FlowerBouquetWebAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Repositories;
@@ -12,6 +13,7 @@ namespace FlowerBouquetWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = UserRoles.Admin)]
     public class AuthenticationController : ControllerBase
     {
         private readonly ICustomerRepository _repository = new CustomerRepository();
@@ -82,7 +84,8 @@ namespace FlowerBouquetWebAPI.Controllers
 
         private JwtSecurityToken GetToken(List<Claim> authClaims)
         {
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Token").Value!));
 
             var token = new JwtSecurityToken(
                 expires: DateTime.Now.AddHours(3),
