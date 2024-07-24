@@ -28,6 +28,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          dockerfile: FlowerBouquetWebAPI/Dockerfile
+          dockerfile: ./FlowerBouquetWebAPI/Dockerfile
           push: true
-          tags: hieu15402/exe201
+          tags: hieu15402/flowerbouquetwebapi
