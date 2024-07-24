@@ -8,6 +8,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
 
+builder.Services.AddControllers();
 // Adding Authentication
 builder.Services
     .AddAuthentication(options =>
@@ -42,7 +43,7 @@ builder.Services.AddControllers()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 // Config JWT for swagger
-builder.Services.ConfigureSwaggerGen(c =>
+builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -70,15 +71,8 @@ builder.Services.ConfigureSwaggerGen(c =>
              new string[] {}
         }
     });
-});
-builder.Services.AddSwaggerGen();
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "PRN231", Version = "v1" });
 
-builder.Services.AddCors(option =>
-{
-    option.AddDefaultPolicy(p =>
-            p.AllowAnyOrigin()
-                .AllowAnyHeader()
-                .AllowAnyMethod());
 });
 
 var app = builder.Build();
@@ -86,12 +80,22 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "PRN231"));
 }
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "PRN231"));
+app.UseHttpsRedirection();
+app.UseCors(corsBuilder =>
+{
+    corsBuilder
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader();
+});
 
-app.UseCors();
-
+app.UseRouting();
 // Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
