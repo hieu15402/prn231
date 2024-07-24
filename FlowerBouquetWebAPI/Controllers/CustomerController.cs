@@ -9,11 +9,10 @@ namespace FlowerBouquetWebAPI.Controllers
 {
     [Route("api/[controller]s")]
     [ApiController]
-    [Authorize(Roles = UserRoles.Admin)]
+    [Authorize]
     public class CustomerController : ControllerBase
     {
         private ICustomerRepository repository = new CustomerRepository();
-
         [HttpGet]
         public ActionResult<IEnumerable<Customer>> GetCustomers(
             string? keyword = null,
@@ -21,13 +20,10 @@ namespace FlowerBouquetWebAPI.Controllers
             int pageSize = 5,
             string orderBy = "CustomerName") => repository.GetCustomers(keyword, pageIndex, pageSize, orderBy);
 
-
         [HttpGet("{id}")]
         public ActionResult<Customer> GetCustomerById(string id) => repository.GetCustomerById(id);
-
         [HttpGet("Email/{email}")]
         public ActionResult<Customer> GetCustomerByEmail(string email) => repository.GetCustomerByEmail(email);
-
         [HttpDelete("{id}")]
         public IActionResult DeleteCustomer(string id)
         {

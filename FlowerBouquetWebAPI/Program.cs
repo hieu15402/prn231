@@ -1,6 +1,7 @@
 using BusinessObjects.Helper;
 using FlowerBouquetWebAPI.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -25,7 +26,8 @@ builder.Services
         {
             ValidateIssuer = false, // Disable issuer validation
             ValidateAudience = false, // Disable audience validation
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                configuration.GetSection("AppSettings:Token").Value!))
         };
     });
 
